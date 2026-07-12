@@ -68,7 +68,7 @@
     padding:14px 20px;
   }
   .topbar-inner{
-    max-width:1280px; margin:0 auto;
+    max-width:1680px; margin:0 auto;
     display:flex; align-items:center; gap:16px; flex-wrap:wrap;
   }
   .brand{
@@ -134,7 +134,7 @@
     font-family:'Inter',sans-serif; font-weight:500;
   }
 
-  main{ max-width:1280px; margin:24px auto; padding:0 20px; }
+  main{ max-width:1680px; margin:24px auto; padding:0 20px; }
 
   /* ---------- Status chips ---------- */
   .chip{
@@ -160,7 +160,8 @@
   /* ---------- Kanban ---------- */
   #kanbanView{ display:flex; gap:14px; overflow-x:auto; padding-bottom:20px; align-items:flex-start; }
   .column{
-    flex:0 0 268px; background:rgba(237,234,226,0.92);
+    flex:1 1 220px; max-width:340px; min-width:220px;
+    background:rgba(237,234,226,0.92);
     border:1px solid var(--bg-line);
     border-radius:12px; padding:10px;
     min-height:120px;
