@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MAIV · Заказы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDEAE2;
+    --surface:#FFFFFF;
+    --surface-alt:#F6F4EE;
+    --ink:#24262B;
+    --ink-soft:#585850;
+    --muted:#8C8A7E;
+    --line:#D8D4C7;
+    --line-strong:#B9B4A2;
+
+    --amber:#D98E2B;
+    --amber-bg:#FBF0DC;
+    --blue:#35618F;
+    --blue-bg:#E4EBF2;
+    --green:#4C7A5E;
+    --green-bg:#E4EEE7;
+    --gold:#8A6D2F;
+    --gold-bg:#F1E8CF;
+    --red:#A8443A;
+    --red-bg:#F3E1DE;
+
+    --radius:10px;
+    --shadow:0 1px 2px rgba(36,38,43,0.06), 0 4px 12px rgba(36,38,43,0.05);
+    --shadow-lift:0 6px 20px rgba(36,38,43,0.14);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--paper),var(--paper)),
+      repeating-linear-gradient(0deg, rgba(36,38,43,0.025) 0px, rgba(36,38,43,0.025) 1px, transparent 1px, transparent 28px);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+
+  h1,h2,h3, .display{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- Header ---------- */
+  header.topbar{
+    position:sticky; top:0; z-index:30;
+    background:rgba(237,234,226,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line-strong);
+    padding:14px 20px;
+  }
+  .topbar-inner{
+    max-width:1280px; margin:0 auto;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .brand{
+    display:flex; align-items:baseline; gap:8px; margin-right:auto;
+  }
+  .brand .mark{
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:20px;
+    letter-spacing:0.04em;
+    color:var(--ink);
+    border:2px solid var(--ink); border-radius:6px;
+    padding:2px 8px;
+    transform:rotate(-1.5deg);
+  }
+  .brand .tag{
+    font-size:13px; color:var(--ink-soft); font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  .viewtoggle{
+    display:flex; background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:999px; padding:3px; gap:2px;
+  }
+  .viewtoggle button{
+    border:none; background:transparent; padding:7px 16px; border-radius:999px;
+    font-family:'Oswald',sans-serif; font-size:12.5px; letter-spacing:0.05em;
+    text-transform:uppercase; color:var(--ink-soft); cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .viewtoggle button.active{ background:var(--ink); color:var(--paper); }
+
+  input[type="text"], input[type="search"], select, textarea, input[type="date"], input[type="time"], input[type="number"]{
+    font-family:'Inter',sans-serif;
+    border:1px solid var(--line-strong);
+    background:var(--surface);
+    color:var(--ink);
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:14px;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:2px solid var(--blue); outline-offset:1px;
+  }
+
+  .search-wrap{ position:relative; }
+  .search-wrap input{ width:200px; padding-left:32px; }
+  .search-wrap svg{ position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.5; }
+
+  select.filter{ min-width:150px; }
+
+  .btn-primary{
+    background:var(--ink); color:var(--paper);
+    border:none; border-radius:8px; padding:10px 18px;
+    font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:0.05em; text-transform:uppercase;
+    cursor:pointer; box-shadow:var(--shadow);
+    transition:transform .12s;
+  }
+  .btn-primary:hover{ transform:translateY(-1px); }
+  .btn-primary:active{ transform:translateY(0); }
+
+  .btn-ghost{
+    background:transparent; border:1px solid var(--line-strong); color:var(--ink);
+    border-radius:8px; padding:9px 14px; font-size:13px; cursor:pointer;
+    font-family:'Inter',sans-serif; font-weight:500;
+  }
+
+  main{ max-width:1280px; margin:24px auto; padding:0 20px; }
+
+  /* ---------- Status chips ---------- */
+  .chip{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11.5px; font-weight:600; letter-spacing:0.02em;
+    padding:3px 9px; border-radius:999px;
+    text-transform:uppercase; font-family:'Inter',sans-serif;
+  }
+  .chip.lead{ background:var(--amber-bg); color:var(--amber); }
+  .chip.accepted{ background:var(--blue-bg); color:var(--blue); }
+  .chip.completed{ background:var(--green-bg); color:var(--green); }
+  .chip.paid{ background:var(--gold-bg); color:var(--gold); }
+  .chip.lost{ background:var(--red-bg); color:var(--red); }
+
+  .platform-badge{
+    display:inline-flex; align-items:center;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600;
+    padding:2px 7px; border-radius:4px; border:1px solid var(--line-strong);
+    background:var(--surface-alt); color:var(--ink-soft);
+    letter-spacing:0.02em;
+  }
+
+  /* ---------- Kanban ---------- */
+  #kanbanView{ display:flex; gap:14px; overflow-x:auto; padding-bottom:20px; align-items:flex-start; }
+  .column{
+    flex:0 0 268px; background:rgba(255,255,255,0.4);
+    border:1px solid var(--line);
+    border-radius:12px; padding:10px;
+    min-height:120px;
+  }
+  .column-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:6px 6px 12px 6px;
+  }
+  .column-head h3{ font-size:14px; margin:0; color:var(--ink); }
+  .column-count{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft);
+    background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:999px; min-width:20px; text-align:center; padding:1px 6px;
+  }
+  .column-drop{ min-height:60px; }
+  .column-drop.dragover{ background:rgba(53,97,143,0.08); border-radius:8px; }
+
+  .card{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line-strong);
+    border-radius:9px;
+    padding:12px 12px 10px 12px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow);
+    cursor:grab;
+  }
+  .card:active{ cursor:grabbing; }
+  .card::before{
+    content:"";
+    position:absolute; top:-1px; left:16px;
+    width:10px; height:10px; border-radius:50%;
+    background:var(--paper); border:1px solid var(--line-strong);
+    border-top:none;
+  }
+  .card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px; }
+  .card-client{ font-weight:600; font-size:14.5px; line-height:1.25; }
+  .card-desc{ font-size:12.5px; color:var(--ink-soft); margin:4px 0 8px 0; line-height:1.4;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card-meta{ display:flex; flex-wrap:wrap; gap:6px; font-size:11.5px; color:var(--muted); }
+  .card-meta span{ display:flex; align-items:center; gap:3px; }
+  .card-price{ font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--ink); font-size:13px; }
+
+  .column[data-status="lost"]{ opacity:0.75; }
+  #lostToggleWrap{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); }
+
+  /* ---------- List view ---------- */
+  #listView{ display:none; }
+  .list-table{ width:100%; border-collapse:collapse; background:var(--surface); border-radius:12px; overflow:hidden; box-shadow:var(--shadow); }
+  .list-table thead th{
+    text-align:left; font-family:'Oswald',sans-serif; font-size:11.5px; letter-spacing:0.05em;
+    text-transform:uppercase; color:var(--ink-soft); padding:12px 14px; border-bottom:1px solid var(--line-strong);
+    background:var(--surface-alt); cursor:pointer; user-select:none;
+  }
+  .list-table tbody td{ padding:12px 14px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:top; }
+  .list-table tbody tr{ cursor:pointer; transition:background .1s; }
+  .list-table tbody tr:hover{ background:var(--surface-alt); }
+  .list-table tbody tr:last-child td{ border-bottom:none; }
+  .list-empty-cell{ text-align:center; color:var(--muted); padding:40px 0 !important; }
+
+  /* ---------- Empty state ---------- */
+  .empty-state{
+    text-align:center; padding:60px 20px; color:var(--ink-soft);
+  }
+  .empty-state h3{ color:var(--ink); font-size:16px; margin-bottom:6px; }
+  .empty-state p{ font-size:13.5px; max-width:340px; margin:0 auto; }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(36,38,43,0.45);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:24px 16px; overflow-y:auto; z-index:100;
+  }
+  .overlay.open{ display:flex; }
+  .modal{
+    background:var(--surface); border-radius:14px; width:100%; max-width:520px;
+    box-shadow:var(--shadow-lift); margin-top:20px; margin-bottom:20px;
+  }
+  .modal-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 22px; border-bottom:1px solid var(--line);
+  }
+  .modal-head h2{ font-size:17px; margin:0; }
+  .modal-close{ background:none; border:none; font-size:20px; cursor:pointer; color:var(--ink-soft); line-height:1; padding:4px; }
+  .modal-body{ padding:20px 22px; display:flex; flex-direction:column; gap:14px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:12px; font-weight:600; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  textarea{ resize:vertical; min-height:60px; font-family:'Inter',sans-serif; }
+  .status-picker{ display:flex; flex-wrap:wrap; gap:6px; }
+  .status-picker button{
+    border:1px solid var(--line-strong); background:var(--surface);
+    padding:6px 12px; border-radius:999px; font-size:12px; cursor:pointer;
+    font-weight:600; text-transform:uppercase; letter-spacing:0.02em; color:var(--ink-soft);
+  }
+  .status-picker button.active.lead{ background:var(--amber-bg); color:var(--amber); border-color:var(--amber); }
+  .status-picker button.active.accepted{ background:var(--blue-bg); color:var(--blue); border-color:var(--blue); }
+  .status-picker button.active.completed{ background:var(--green-bg); color:var(--green); border-color:var(--green); }
+  .status-picker button.active.paid{ background:var(--gold-bg); color:var(--gold); border-color:var(--gold); }
+  .status-picker button.active.lost{ background:var(--red-bg); color:var(--red); border-color:var(--red); }
+
+  .modal-footer{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 22px 20px 22px; border-top:1px solid var(--line);
+  }
+  .danger-link{ background:none; border:none; color:var(--red); font-size:13px; cursor:pointer; font-weight:500; }
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); padding:11px 20px; border-radius:8px;
+    font-size:13.5px; opacity:0; pointer-events:none; transition:all .25s;
+    z-index:200; box-shadow:var(--shadow-lift);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .loading-bar{
+    position:fixed; top:0; left:0; height:2px; background:var(--blue);
+    width:0%; z-index:300; transition:width .3s;
+  }
+
+  #configBanner{
+    max-width:1280px; margin:16px auto 0 auto; padding:12px 20px;
+    background:var(--amber-bg); border:1px solid var(--amber); border-radius:10px;
+    font-size:13px; color:#6b4a15; display:none;
+  }
+  #configBanner code{ background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:4px; }
+
+  @media (max-width:720px){
+    .field-row{ grid-template-columns:1fr; }
+    .search-wrap input{ width:130px; }
+    #listView table thead{ display:none; }
+    .list-table, .list-table tbody, .list-table tr, .list-table td{ display:block; width:100%; }
+    .list-table tbody tr{ border-bottom:1px solid var(--line); padding:10px 4px; }
+    .list-table tbody td{ border:none; padding:3px 10px; }
+    .list-table tbody td.cell-client{ font-weight:600; font-size:14.5px; padding-top:8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loadingBar"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="mark">MAIV</span>
+      <span class="tag">Заказы · все площадки в одном месте</span>
+    </div>
+    <div class="viewtoggle">
+      <button id="btnKanban" class="active">Kanban</button>
+      <button id="btnList">Список</button>
+    </div>
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#24262B" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="#24262B" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="search" id="searchInput" placeholder="Поиск по клиенту, адресу...">
+    </div>
+    <select class="filter" id="platformFilter">
+      <option value="">Все площадки</option>
+      <option value="Thumbtack">Thumbtack</option>
+      <option value="TaskRabbit">TaskRabbit</option>
+      <option value="HD Pro Referral">HD Pro Referral</option>
+      <option value="Google Business">Google Business</option>
+      <option value="Другое">Другое</option>
+    </select>
+    <button class="btn-primary" id="btnNewOrder">+ Новый заказ</button>
+  </div>
+</header>
+
+<div id="configBanner">
+  ⚠️ Backend не настроен. Открой <code>index.html</code> и вставь URL Google Apps Script в <code>CONFIG.API_URL</code> (см. README.md).
+</div>
+
+<main>
+  <div id="kanbanView"></div>
+  <div id="listView">
+    <table class="list-table">
+      <thead>
+        <tr>
+          <th data-sort="client">Клиент</th>
+          <th data-sort="platform">Площадка</th>
+          <th data-sort="status">Статус</th>
+          <th data-sort="scheduledDate">Дата</th>
+          <th data-sort="priceFinal">Цена</th>
+          <th data-sort="address">Адрес</th>
+        </tr>
+      </thead>
+      <tbody id="listBody"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Новый заказ</h2>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Статус</label>
+        <div class="status-picker" id="statusPicker"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Площадка</label>
+          <select id="f_platform">
+            <option>Thumbtack</option>
+            <option>TaskRabbit</option>
+            <option>HD Pro Referral</option>
+            <option>Google Business</option>
+            <option>Другое</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Клиент</label>
+          <input type="text" id="f_client" placeholder="Имя клиента">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Контакт</label>
+          <input type="text" id="f_contact" placeholder="Телефон / email">
+        </div>
+        <div class="field">
+          <label>Адрес</label>
+          <input type="text" id="f_address" placeholder="Адрес объекта">
+        </div>
+      </div>
+      <div class="field">
+        <label>Описание работы</label>
+        <textarea id="f_description" placeholder="Что нужно сделать"></textarea>
+      </div>
+      <div class="field">
+        <label>Заметки / переписка</label>
+        <textarea id="f_notes" placeholder="Ключевые моменты переписки с клиентом"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Дата работ</label>
+          <input type="date" id="f_date">
+        </div>
+        <div class="field">
+          <label>Время</label>
+          <input type="time" id="f_time">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Оценка ($)</label>
+          <input type="number" id="f_priceEstimate" placeholder="0">
+        </div>
+        <div class="field">
+          <label>Финальная цена ($)</label>
+          <input type="number" id="f_priceFinal" placeholder="0">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="danger-link" id="btnDelete">Удалить заказ</button>
+      <button class="btn-primary" id="btnSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================= CONFIG ======================= */
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbz6on7-DNmMcauL_X3pRPSPQlvFaBcqwFCyst86II7QOMm9BQubBaSwH9KPbpRzXVl2tA/exec'
+};
+
+/* ======================= STATE ======================= */
+const STATUSES = [
+  { key:'lead',      label:'Обсуждение', cls:'lead' },
+  { key:'accepted',  label:'Принят',     cls:'accepted' },
+  { key:'completed', label:'Выполнен',   cls:'completed' },
+  { key:'paid',       label:'Оплачен',    cls:'paid' },
+  { key:'lost',       label:'Отменён',    cls:'lost' }
+];
+let orders = [];
+let currentView = 'kanban';
+let editingId = null;
+let sortState = { key:'scheduledDate', dir:1 };
+
+/* ======================= HELPERS ======================= */
+function statusMeta(key){ return STATUSES.find(s=>s.key===key) || STATUSES[0]; }
+function fmtMoney(v){ if(v===undefined||v===null||v==='') return '—'; return '$'+Number(v).toLocaleString('en-US'); }
+function fmtDate(d){ if(!d) return '—'; try{ const dt=new Date(d); if(isNaN(dt)) return d; return dt.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'});}catch(e){return d;} }
+function uid(){ return 'tmp_'+Math.random().toString(36).slice(2,10); }
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function setLoading(on){
+  const bar=document.getElementById('loadingBar');
+  bar.style.width = on ? '70%' : '100%';
+  if(!on){ setTimeout(()=>{ bar.style.width='0%'; }, 350); }
+}
+
+/* ======================= API ======================= */
+async function apiList(){
+  if(!apiConfigured()) return [];
+  const res = await fetch(CONFIG.API_URL);
+  return res.json();
+}
+async function apiSend(action, data){
+  if(!apiConfigured()) return orders;
+  const res = await fetch(CONFIG.API_URL, {
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({action}, data))
+  });
+  return res.json();
+}
+function apiConfigured(){
+  return CONFIG.API_URL && !CONFIG.API_URL.includes('PASTE_YOUR');
+}
+
+/* ======================= LOAD ======================= */
+async function loadOrders(){
+  document.getElementById('configBanner').style.display = apiConfigured() ? 'none' : 'block';
+  if(!apiConfigured()){ orders = []; render(); return; }
+  setLoading(true);
+  try{
+    orders = await apiList();
+  }catch(err){
+    console.error(err);
+    showToast('Не удалось загрузить данные');
+  }
+  setLoading(false);
+  render();
+}
+
+/* ======================= RENDER ======================= */
+function getFiltered(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const platform = document.getElementById('platformFilter').value;
+  return orders.filter(o=>{
+    if(platform && o.platform !== platform) return false;
+    if(q){
+      const hay = [o.client,o.address,o.description,o.notes].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function render(){
+  if(currentView==='kanban') renderKanban(); else renderList();
+}
+
+function renderKanban(){
+  const board = document.getElementById('kanbanView');
+  const filtered = getFiltered();
+  board.innerHTML = '';
+  STATUSES.forEach(st=>{
+    const col = document.createElement('div');
+    col.className='column';
+    col.dataset.status = st.key;
+    const items = filtered.filter(o=>o.status===st.key);
+    col.innerHTML = `
+      <div class="column-head">
+        <h3>${st.label}</h3>
+        <span class="column-count mono">${items.length}</span>
+      </div>
+      <div class="column-drop" data-status="${st.key}"></div>
+    `;
+    const drop = col.querySelector('.column-drop');
+    drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('dragover'); });
+    drop.addEventListener('dragleave', ()=> drop.classList.remove('dragover'));
+    drop.addEventListener('drop', e=>{
+      e.preventDefault(); drop.classList.remove('dragover');
+      const id = e.dataTransfer.getData('text/plain');
+      const order = orders.find(o=>o.id===id);
+      if(order && order.status !== st.key){
+        order.status = st.key;
+        render();
+        apiSend('update', {order}).then(()=>showToast('Статус обновлён')).catch(()=>showToast('Ошибка сохранения'));
+      }
+    });
+    items.forEach(o=> drop.appendChild(renderCard(o)) );
+    if(items.length===0){
+      const empty=document.createElement('div');
+      empty.style.cssText='padding:16px 6px;color:var(--muted);font-size:12px;text-align:center;';
+      empty.textContent='Пусто';
+      drop.appendChild(empty);
+    }
+    board.appendChild(col);
+  });
+}
+
+function renderCard(o){
+  const card = document.createElement('div');
+  card.className='card';
+  card.draggable = true;
+  card.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', o.id); });
+  card.addEventListener('click', ()=> openModal(o));
+  const price = o.priceFinal || o.priceEstimate;
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-client">${escapeHtml(o.client || 'Без имени')}</div>
+      <span class="platform-badge">${escapeHtml(o.platform||'—')}</span>
+    </div>
+    <div class="card-desc">${escapeHtml(o.description||'')}</div>
+    <div class="card-meta">
+      ${o.scheduledDate ? `<span class="mono">📅 ${fmtDate(o.scheduledDate)}</span>` : ''}
+      ${price ? `<span class="card-price">${fmtMoney(price)}</span>` : ''}
+    </div>
+  `;
+  return card;
+}
+
+function renderList(){
+  const tbody = document.getElementById('listBody');
+  let filtered = getFiltered();
+  filtered.sort((a,b)=>{
+    let av=a[sortState.key]||'', bv=b[sortState.key]||'';
+    if(sortState.key==='priceFinal'){ av=Number(a.priceFinal||a.priceEstimate||0); bv=Number(b.priceFinal||b.priceEstimate||0); }
+    if(av<bv) return -1*sortState.dir;
+    if(av>bv) return 1*sortState.dir;
+    return 0;
+  });
+  tbody.innerHTML='';
+  if(filtered.length===0){
+    tbody.innerHTML = `<tr><td colspan="6" class="list-empty-cell">Заказов нет — нажми «+ Новый заказ»</td></tr>`;
+    return;
+  }
+  filtered.forEach(o=>{
+    const tr=document.createElement('tr');
+    const st=statusMeta(o.status);
+    const price = o.priceFinal || o.priceEstimate;
+    tr.innerHTML = `
+      <td class="cell-client">${escapeHtml(o.client||'Без имени')}</td>
+      <td><span class="platform-badge">${escapeHtml(o.platform||'—')}</span></td>
+      <td><span class="chip ${st.cls}">${st.label}</span></td>
+      <td class="mono">${fmtDate(o.scheduledDate)}</td>
+      <td class="mono">${fmtMoney(price)}</td>
+      <td>${escapeHtml(o.address||'—')}</td>
+    `;
+    tr.addEventListener('click', ()=>openModal(o));
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ======================= MODAL ======================= */
+function buildStatusPicker(activeKey){
+  const wrap = document.getElementById('statusPicker');
+  wrap.innerHTML='';
+  STATUSES.forEach(st=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent=st.label;
+    b.className = st.key===activeKey ? `active ${st.cls}` : '';
+    b.dataset.key = st.key;
+    b.addEventListener('click', ()=>{
+      wrap.querySelectorAll('button').forEach(x=>x.className='');
+      b.className=`active ${st.cls}`;
+    });
+    wrap.appendChild(b);
+  });
+}
+
+function openModal(order){
+  editingId = order ? order.id : null;
+  document.getElementById('modalTitle').textContent = order ? 'Заказ' : 'Новый заказ';
+  document.getElementById('btnDelete').style.display = order ? 'inline' : 'none';
+  buildStatusPicker(order ? order.status : 'lead');
+
+  document.getElementById('f_platform').value = order?.platform || 'Thumbtack';
+  document.getElementById('f_client').value = order?.client || '';
+  document.getElementById('f_contact').value = order?.contact || '';
+  document.getElementById('f_address').value = order?.address || '';
+  document.getElementById('f_description').value = order?.description || '';
+  document.getElementById('f_notes').value = order?.notes || '';
+  document.getElementById('f_priceEstimate').value = order?.priceEstimate || '';
+  document.getElementById('f_priceFinal').value = order?.priceFinal || '';
+
+  if(order?.scheduledDate){
+    const dt = new Date(order.scheduledDate);
+    if(!isNaN(dt)){
+      document.getElementById('f_date').value = dt.toISOString().slice(0,10);
+      const hh=String(dt.getHours()).padStart(2,'0'), mm=String(dt.getMinutes()).padStart(2,'0');
+      document.getElementById('f_time').value = `${hh}:${mm}`;
+    } else {
+      document.getElementById('f_date').value=''; document.getElementById('f_time').value='';
+    }
+  } else {
+    document.getElementById('f_date').value=''; document.getElementById('f_time').value='';
+  }
+
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); editingId=null; }
+
+async function saveModal(){
+  if(!apiConfigured()){ showToast('Сначала настрой CONFIG.API_URL'); return; }
+  const statusBtn = document.querySelector('#statusPicker button.active');
+  const date = document.getElementById('f_date').value;
+  const time = document.getElementById('f_time').value;
+  let scheduledDate = '';
+  if(date){ scheduledDate = new Date(`${date}T${time||'00:00'}:00`).toISOString(); }
+
+  const order = {
+    id: editingId || undefined,
+    platform: document.getElementById('f_platform').value,
+    client: document.getElementById('f_client').value.trim(),
+    contact: document.getElementById('f_contact').value.trim(),
+    address: document.getElementById('f_address').value.trim(),
+    description: document.getElementById('f_description').value.trim(),
+    notes: document.getElementById('f_notes').value.trim(),
+    status: statusBtn ? statusBtn.dataset.key : 'lead',
+    scheduledDate,
+    priceEstimate: document.getElementById('f_priceEstimate').value,
+    priceFinal: document.getElementById('f_priceFinal').value
+  };
+
+  if(!order.client){ showToast('Укажи имя клиента'); return; }
+
+  setLoading(true);
+  try{
+    if(editingId){
+      const fresh = await apiSend('update', {order});
+      orders = fresh;
+      showToast('Заказ обновлён');
+    } else {
+      const fresh = await apiSend('add', {order});
+      orders = fresh;
+      showToast('Заказ добавлен');
+    }
+    closeModal();
+    render();
+  }catch(err){
+    console.error(err);
+    showToast('Ошибка сохранения');
+  }
+  setLoading(false);
+}
+
+async function deleteCurrent(){
+  if(!editingId) return;
+  if(!confirm('Удалить этот заказ?')) return;
+  setLoading(true);
+  try{
+    const fresh = await apiSend('delete', {id: editingId});
+    orders = fresh;
+    closeModal();
+    render();
+    showToast('Заказ удалён');
+  }catch(err){
+    console.error(err);
+    showToast('Ошибка удаления');
+  }
+  setLoading(false);
+}
+
+/* ======================= EVENTS ======================= */
+document.getElementById('btnKanban').addEventListener('click', ()=>{
+  currentView='kanban';
+  document.getElementById('btnKanban').classList.add('active');
+  document.getElementById('btnList').classList.remove('active');
+  document.getElementById('kanbanView').style.display='flex';
+  document.getElementById('listView').style.display='none';
+  render();
+});
+document.getElementById('btnList').addEventListener('click', ()=>{
+  currentView='list';
+  document.getElementById('btnList').classList.add('active');
+  document.getElementById('btnKanban').classList.remove('active');
+  document.getElementById('kanbanView').style.display='none';
+  document.getElementById('listView').style.display='block';
+  render();
+});
+document.getElementById('btnNewOrder').addEventListener('click', ()=> openModal(null));
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
+document.getElementById('btnSave').addEventListener('click', saveModal);
+document.getElementById('btnDelete').addEventListener('click', deleteCurrent);
+document.getElementById('searchInput').addEventListener('input', render);
+document.getElementById('platformFilter').addEventListener('change', render);
+document.querySelectorAll('.list-table thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.sort;
+    if(sortState.key===key) sortState.dir *= -1; else { sortState.key=key; sortState.dir=1; }
+    render();
+  });
+});
+
+loadOrders();
+</script>
+</body>
+</html>
