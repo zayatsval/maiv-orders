@@ -427,7 +427,7 @@
 <script>
 /* ======================= CONFIG ======================= */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbz6on7-DNmMcauL_X3pRPSPQlvFaBcqwFCyst86II7QOMm9BQubBaSwH9KPbpRzXVl2tA/exec'
+  API_URL: 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'
 };
 
 /* ======================= STATE ======================= */
@@ -626,6 +626,37 @@ function buildStatusPicker(activeKey){
   });
 }
 
+let modalSnapshot = null;
+
+function getFormSnapshot(){
+  const statusBtn = document.querySelector('#statusPicker button.active');
+  return JSON.stringify({
+    status: statusBtn ? statusBtn.dataset.key : '',
+    platform: document.getElementById('f_platform').value,
+    client: document.getElementById('f_client').value,
+    contact: document.getElementById('f_contact').value,
+    address: document.getElementById('f_address').value,
+    description: document.getElementById('f_description').value,
+    notes: document.getElementById('f_notes').value,
+    date: document.getElementById('f_date').value,
+    time: document.getElementById('f_time').value,
+    priceEstimate: document.getElementById('f_priceEstimate').value,
+    priceFinal: document.getElementById('f_priceFinal').value
+  });
+}
+
+function hasUnsavedChanges(){
+  if(modalSnapshot === null) return false;
+  return getFormSnapshot() !== modalSnapshot;
+}
+
+function requestCloseModal(){
+  if(hasUnsavedChanges()){
+    if(!confirm('Есть несохранённые изменения. Закрыть без сохранения?')) return;
+  }
+  closeModal();
+}
+
 function openModal(order){
   editingId = order ? order.id : null;
   document.getElementById('modalTitle').textContent = order ? 'Заказ' : 'Новый заказ';
@@ -655,8 +686,9 @@ function openModal(order){
   }
 
   document.getElementById('overlay').classList.add('open');
+  modalSnapshot = getFormSnapshot();
 }
-function closeModal(){ document.getElementById('overlay').classList.remove('open'); editingId=null; }
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); editingId=null; modalSnapshot=null; }
 
 async function saveModal(){
   if(!apiConfigured()){ showToast('Сначала настрой CONFIG.API_URL'); return; }
@@ -737,8 +769,11 @@ document.getElementById('btnList').addEventListener('click', ()=>{
   render();
 });
 document.getElementById('btnNewOrder').addEventListener('click', ()=> openModal(null));
-document.getElementById('modalClose').addEventListener('click', closeModal);
-document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
+document.getElementById('modalClose').addEventListener('click', requestCloseModal);
+document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') requestCloseModal(); });
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && document.getElementById('overlay').classList.contains('open')) requestCloseModal();
+});
 document.getElementById('btnSave').addEventListener('click', saveModal);
 document.getElementById('btnDelete').addEventListener('click', deleteCurrent);
 document.getElementById('searchInput').addEventListener('input', render);
