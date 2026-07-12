@@ -190,6 +190,13 @@
     cursor:grab;
     color:var(--ink);
   }
+  .card-accepted{
+    background:var(--blue-bg);
+    border-color:var(--blue);
+    border-left:4px solid var(--blue);
+    padding-left:10px;
+  }
+  .card-accepted .card-desc{ color:#3E5266; }
   .card:active{ cursor:grabbing; }
   .card::before{
     content:"";
@@ -454,6 +461,7 @@ let sortState = { key:'scheduledDate', dir:1 };
 function statusMeta(key){ return STATUSES.find(s=>s.key===key) || STATUSES[0]; }
 function fmtMoney(v){ if(v===undefined||v===null||v==='') return '—'; return '$'+Number(v).toLocaleString('en-US'); }
 function fmtDate(d){ if(!d) return '—'; try{ const dt=new Date(d); if(isNaN(dt)) return d; return dt.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'});}catch(e){return d;} }
+function fmtTime(d){ if(!d) return ''; try{ const dt=new Date(d); if(isNaN(dt)) return ''; const hh=String(dt.getHours()).padStart(2,'0'), mm=String(dt.getMinutes()).padStart(2,'0'); if(hh==='00'&&mm==='00') return ''; return `${hh}:${mm}`; }catch(e){return '';} }
 function uid(){ return 'tmp_'+Math.random().toString(36).slice(2,10); }
 function showToast(msg){
   const t=document.getElementById('toast');
@@ -560,11 +568,12 @@ function renderKanban(){
 
 function renderCard(o){
   const card = document.createElement('div');
-  card.className='card';
+  card.className = o.status === 'accepted' ? 'card card-accepted' : 'card';
   card.draggable = true;
   card.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', o.id); });
   card.addEventListener('click', ()=> openModal(o));
   const price = o.priceFinal || o.priceEstimate;
+  const time = fmtTime(o.scheduledDate);
   card.innerHTML = `
     <div class="card-top">
       <div class="card-client">${escapeHtml(o.client || 'Без имени')}</div>
@@ -572,7 +581,7 @@ function renderCard(o){
     </div>
     <div class="card-desc">${escapeHtml(o.description||'')}</div>
     <div class="card-meta">
-      ${o.scheduledDate ? `<span class="mono">📅 ${fmtDate(o.scheduledDate)}</span>` : ''}
+      ${o.scheduledDate ? `<span class="mono">📅 ${fmtDate(o.scheduledDate)}${time ? ' · '+time : ''}</span>` : ''}
       ${price ? `<span class="card-price">${fmtMoney(price)}</span>` : ''}
     </div>
   `;
